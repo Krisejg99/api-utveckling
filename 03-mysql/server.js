@@ -5,6 +5,7 @@
 // Require stuff
 require('dotenv').config()
 const express = require('express')
+const { isString } = require('lodash')
 const _ = require('lodash')
 const morgan = require('morgan')
 const PORT = 3000
@@ -41,45 +42,149 @@ app.get('/', (req, res) => {
 })
 
 /**
- * GET /URL
+ * GET /movies
  */
 
-const appGet = database => {
-	app.get(`/${database}`, async (req, res) => {
-		const db = await connection
-		const [rows] = await db.query(`SELECT * FROM ${database}`)
-		res.send(rows)
-	})
-}
+app.get('/movies', async (req, res) => {
+	const db = await connection
+	const [rows] = await db.query('SELECT * FROM movies')
+	res.send(rows)
+})
 
-appGet('movies')
-appGet('directors')
-appGet('director_movie')
+app.get('/movies/:movieId', async (req, res) => {
+	const { movieId } = req.params
+	const db = await connection
+	const [rows] = await db.query('SELECT * FROM movies WHERE id=?', [movieId])
+
+	if (!rows.length) {
+		res.status(404).send({
+			message: `Sorry, there is no record of id ${movieId}.`
+		})
+		return
+	}
+
+	res.send(rows[0])
+})
 
 /**
- * GET /URL/:id
+ * POST /movies
  */
 
-const appGetId = database => {
-	app.get(`/${database}/:id`, async (req, res) => {
-		const { id } = req.params
-		const db = await connection
-		const [rows] = await db.query(`SELECT * FROM ${database} WHERE id="${id}"`)
+app.post('/movies', async (req, res) => {
+	console.log(req.body)
 
-		if (!rows.length) {
-			res.status(404).send({
-				message: `Sorry, there is no record of id '${id}'.`
+	const { title, genre, runtime, release_date } = req.body
+
+	if (typeof title !== 'string' || typeof genre !== 'string') {
+		res.status(400).send({
+			message: "400 Bad Request. 'Title' or 'genre' is missing or of the wrong type."
+		})
+		return
+	}
+
+	if (runtime && typeof runtime !== 'number') {
+		res.status(400).send({
+			message: 'Runtime has to be a number.'
+		})
+		return
+	}
+
+	if (release_date) {
+		const releaseDate = new Date(release_date)
+
+		if (!releaseDate instanceof Date || isNaN(releaseDate)) {
+			res.status(400).send({
+				message: 'Release date has to be a valid date.'
 			})
 			return
 		}
+	}
 
-		res.send(rows[0])
+	const db = await connection
+	const [result] = await db.query('INSERT INTO movies SET ?', {
+		title,
+		genre,
+		runtime,
+		release_date,
 	})
-}
 
-appGetId('movies')
-appGetId('directors')
-appGetId('director_movie')
+	res.status(201).send({
+		...req.body,
+		id: result.insertId,
+	})
+})
+
+/**
+ * PATCH /movies/:movieId
+ */
+
+app.patch('/movies/:movieId', async (req, res) => {
+	const db = await connection
+
+	try {
+		await db.query('UPDATE movies SET ? WHERE id = ?', [req.body, req.params.movieId])
+	}
+	catch (err) {
+		res.status(500).send({ message: 'I do not compute.' })
+	}
+
+	res.send(req.body)
+})
+
+/**
+ * DELETE /movies/:movieId
+ */
+
+app.delete('/movies/:movieId', async (req, res) => {
+	const db = await connection
+
+	try {
+		await db.query('DELETE FROM movies WHERE id = ?', [req.params.movieId])
+	}
+	catch (err) {
+		res.status(500).send({ message: 'There is nothing to delete here...' })
+	}
+
+	res.send({
+		message: 'You deleted a movie.',
+		id: req.params.movieId
+	})
+})
+
+/**
+ * GET /directors
+ */
+
+app.get('/directors', async (req, res) => {
+	const db = await connection
+	const [rows] = await db.query('SELECT * FROM directors')
+	res.send(rows)
+})
+
+app.get('/directors/:directorId', async (req, res) => {
+	const { directorId } = req.params
+	const db = await connection
+	const [rows] = await db.query('SELECT * FROM directors WHERE id=?', [directorId])
+
+	if (!rows.length) {
+		res.status(404).send({
+			message: `Sorry, there is no record of id ${directorId}.`
+		})
+		return
+	}
+
+	res.send(rows[0])
+})
+
+/**
+ * GET /director_movie
+ */
+
+app.get('/director_movie', async (req, res) => {
+	const db = await connection
+	const [rows] = await db.query('SELECT * FROM director_movie')
+	res.send(rows)
+})
 
 // Catch requests where a route does not exist
 app.use((req, res) => {
