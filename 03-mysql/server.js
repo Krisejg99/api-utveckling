@@ -47,14 +47,14 @@ app.get('/', (req, res) => {
 
 app.get('/movies', async (req, res) => {
 	const db = await connection
-	const [rows] = await db.query('SELECT * FROM movies')
+	const [rows] = db.query('SELECT * FROM movies')
 	res.send(rows)
 })
 
 app.get('/movies/:movieId', async (req, res) => {
 	const { movieId } = req.params
 	const db = await connection
-	const [rows] = await db.query('SELECT * FROM movies WHERE id=?', [movieId])
+	const [rows] = db.query('SELECT * FROM movies WHERE id=?', [movieId])
 
 	if (!rows.length) {
 		res.status(404).send({
@@ -89,19 +89,17 @@ app.post('/movies', async (req, res) => {
 		return
 	}
 
-	if (release_date) {
-		const releaseDate = new Date(release_date)
+	const releaseDate = new Date(release_date)
 
-		if (!releaseDate instanceof Date || isNaN(releaseDate)) {
-			res.status(400).send({
-				message: 'Release date has to be a valid date.'
-			})
-			return
-		}
+	if (release_date && (!releaseDate instanceof Date || isNaN(releaseDate))) {
+		res.status(400).send({
+			message: 'Release date has to be a valid date.'
+		})
+		return
 	}
 
 	const db = await connection
-	const [result] = await db.query('INSERT INTO movies SET ?', {
+	const [result] = db.query('INSERT INTO movies SET ?', {
 		title,
 		genre,
 		runtime,
@@ -121,8 +119,9 @@ app.post('/movies', async (req, res) => {
 app.patch('/movies/:movieId', async (req, res) => {
 	const db = await connection
 
+	// It always runs 'try' because the SQL command is valid, even though nothing happens in the table.
 	try {
-		await db.query('UPDATE movies SET ? WHERE id = ?', [req.body, req.params.movieId])
+		db.query('UPDATE movies SET ? WHERE id = ?', [req.body, req.params.movieId])
 	}
 	catch (err) {
 		res.status(500).send({ message: 'I do not compute.' })
@@ -136,10 +135,12 @@ app.patch('/movies/:movieId', async (req, res) => {
  */
 
 app.delete('/movies/:movieId', async (req, res) => {
+	const { movieId } = req.params
 	const db = await connection
 
+	// It always runs 'try' because the SQL command is valid, even though nothing happens in the table.
 	try {
-		await db.query('DELETE FROM movies WHERE id = ?', [req.params.movieId])
+		db.query('DELETE FROM movies WHERE id = ?', [movieId])
 	}
 	catch (err) {
 		res.status(500).send({ message: 'There is nothing to delete here...' })
@@ -147,7 +148,7 @@ app.delete('/movies/:movieId', async (req, res) => {
 
 	res.send({
 		message: 'You deleted a movie.',
-		id: req.params.movieId
+		id: movieId
 	})
 })
 
@@ -157,14 +158,14 @@ app.delete('/movies/:movieId', async (req, res) => {
 
 app.get('/directors', async (req, res) => {
 	const db = await connection
-	const [rows] = await db.query('SELECT * FROM directors')
+	const [rows] = db.query('SELECT * FROM directors')
 	res.send(rows)
 })
 
 app.get('/directors/:directorId', async (req, res) => {
 	const { directorId } = req.params
 	const db = await connection
-	const [rows] = await db.query('SELECT * FROM directors WHERE id=?', [directorId])
+	const [rows] = db.query('SELECT * FROM directors WHERE id=?', [directorId])
 
 	if (!rows.length) {
 		res.status(404).send({
@@ -182,7 +183,7 @@ app.get('/directors/:directorId', async (req, res) => {
 
 app.get('/director_movie', async (req, res) => {
 	const db = await connection
-	const [rows] = await db.query('SELECT * FROM director_movie')
+	const [rows] = db.query('SELECT * FROM director_movie')
 	res.send(rows)
 })
 
