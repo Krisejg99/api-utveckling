@@ -47,14 +47,14 @@ app.get('/', (req, res) => {
 
 app.get('/movies', async (req, res) => {
 	const db = await connection
-	const [rows] = db.query('SELECT * FROM movies')
+	const [rows] = await db.query('SELECT * FROM movies')
 	res.send(rows)
 })
 
 app.get('/movies/:movieId', async (req, res) => {
 	const { movieId } = req.params
 	const db = await connection
-	const [rows] = db.query('SELECT * FROM movies WHERE id=?', [movieId])
+	const [rows] = await db.query('SELECT * FROM movies WHERE id=?', [movieId])
 
 	if (!rows.length) {
 		res.status(404).send({
@@ -99,7 +99,7 @@ app.post('/movies', async (req, res) => {
 	}
 
 	const db = await connection
-	const [result] = db.query('INSERT INTO movies SET ?', {
+	const [result] = await db.query('INSERT INTO movies SET ?', {
 		title,
 		genre,
 		runtime,
@@ -158,7 +158,7 @@ app.delete('/movies/:movieId', async (req, res) => {
 
 app.get('/directors', async (req, res) => {
 	const db = await connection
-	const [rows] = db.query('SELECT * FROM directors')
+	const [rows] = await db.query('SELECT * FROM directors')
 	res.send(rows)
 })
 
