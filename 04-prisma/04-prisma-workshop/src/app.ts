@@ -115,6 +115,9 @@ app.post('/phones', async (req, res) => {
 			imei,
 			user_id,
 		},
+		include: {
+			users: true,
+		},
 	})
 
 	res.send(phone)
