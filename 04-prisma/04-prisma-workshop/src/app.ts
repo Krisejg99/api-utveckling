@@ -20,23 +20,48 @@ app.get('/', (req, res) => {
  */
 
 app.get('/users', async (req, res) => {
-	const users = await prisma.users.findMany()
-	res.send(users)
+	try {
+		const users = await prisma.users.findMany()
+		res.send(users)
+	}
+	catch (err) {
+		console.log(err)
+
+		res.status(500).send({
+			message: 'Server offline.'
+		})
+	}
 })
 
 app.get('/users/:userId', async (req, res) => {
 	const userId = Number(req.params.userId)
 
-	const user = await prisma.users.findUnique({
-		where: {
-			id: userId,
-		},
-		include: {
-			phones: true,
-		},
-	})
+	try {
+		const user = await prisma.users.findUnique({
+			where: {
+				id: userId,
+			},
+			include: {
+				phones: true,
+			},
+		})
 
-	res.send(user)
+		if (!user) {
+			res.status(404).send({
+				message: `404. There is no user with id ${userId}.`
+			})
+			return
+		}
+
+		res.send(user)
+	}
+	catch (err) {
+		console.log(err)
+
+		res.status(500).send({
+			message: 'Server offline.'
+		})
+	}
 })
 
 /**
@@ -44,23 +69,49 @@ app.get('/users/:userId', async (req, res) => {
  */
 
 app.get('/phones', async (req, res) => {
-	const phones = await prisma.phones.findMany()
-	res.send(phones)
+
+	try {
+		const phones = await prisma.phones.findMany()
+		res.send(phones)
+	}
+	catch (err) {
+		console.log(err)
+
+		res.status(500).send({
+			message: 'Server offline.'
+		})
+	}
 })
 
 app.get('/phones/:phoneId', async (req, res) => {
 	const phoneId = Number(req.params.phoneId)
 
-	const phone = await prisma.phones.findUnique({
-		where: {
-			id: phoneId,
-		},
-		include: {
-			users: true,
-		},
-	})
+	try {
+		const phone = await prisma.phones.findUnique({
+			where: {
+				id: phoneId,
+			},
+			include: {
+				user: true,
+			},
+		})
 
-	res.send(phone)
+		if (!phone) {
+			res.status(404).send({
+				message: `404. There is no phone with id ${phoneId}.`
+			})
+			return
+		}
+
+		res.send(phone)
+	}
+	catch (err) {
+		console.log(err)
+
+		res.status(500).send({
+			message: 'Server offline.'
+		})
+	}
 })
 
 /**
@@ -71,23 +122,33 @@ app.post('/users', async (req, res) => {
 	const { name } = req.body
 
 	// Check that the data is correctly formatted
-	if (typeof name !== 'string') {
-		res.send({
-			message: "That's not a valid name."
+		if (typeof name !== 'string') {
+
+			res.send({
+				message: "That's not a valid name."
+			})
+			return
+		}
+
+	try {
+		const user = await prisma.users.create({
+			data: {
+				name,
+			},
+			include: {
+				phones: true,
+			},
 		})
-		return
+
+		res.send(user)
 	}
+	catch (err) {
+		console.log(err)
 
-	const user = await prisma.users.create({
-		data: {
-			name,
-		},
-		include: {
-			phones: true,
-		},
-	})
-
-	res.send(user)
+		res.status(500).send({
+			message: 'Server offline.'
+		})
+	}
 })
 
 /**
@@ -99,28 +160,39 @@ app.post('/phones', async (req, res) => {
 
 	// Check that the data is correctly formatted
 	if (typeof manufacturer !== 'string'
-		|| typeof model !== 'string'
-		|| typeof imei !== 'string'
-		|| typeof user_id !== 'number') {
+	|| typeof model !== 'string'
+	|| typeof imei !== 'string'
+	|| typeof user_id !== 'number') {
+
 		res.send({
 			message: "Manufacturer, model and imei must be strings and user_id must be a number."
 		})
+
 		return
 	}
 
-	const phone = await prisma.phones.create({
-		data: {
-			manufacturer,
-			model,
-			imei,
-			user_id,
-		},
-		include: {
-			users: true,
-		},
-	})
+	try {
+		const phone = await prisma.phones.create({
+			data: {
+				manufacturer,
+				model,
+				imei,
+				user_id,
+			},
+			include: {
+				user: true,
+			},
+		})
 
-	res.send(phone)
+		res.send(phone)
+	}
+	catch (err) {
+		console.log(err)
+
+		res.status(500).send({
+			message: 'Server offline.'
+		})
+	}
 })
 
 export default app

@@ -96,7 +96,7 @@ const main = async () => {
 	// Get all phones and their user (if they have one)
 	const phones = await prisma.phones.findMany({
 		include: {
-			users: true,
+			user: true,
 		}
 	})
 	console.log(phones)
