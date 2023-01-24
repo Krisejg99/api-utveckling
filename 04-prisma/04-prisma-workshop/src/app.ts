@@ -28,7 +28,7 @@ app.get('/users', async (req, res) => {
 		console.log(err)
 
 		res.status(500).send({
-			message: 'Server offline.'
+			message: 'Something went wrong. Try again later.'
 		})
 	}
 })
@@ -59,7 +59,7 @@ app.get('/users/:userId', async (req, res) => {
 		console.log(err)
 
 		res.status(500).send({
-			message: 'Server offline.'
+			message: 'Something went wrong. Try again later.'
 		})
 	}
 })
@@ -78,7 +78,7 @@ app.get('/phones', async (req, res) => {
 		console.log(err)
 
 		res.status(500).send({
-			message: 'Server offline.'
+			message: 'Something went wrong. Try again later.'
 		})
 	}
 })
@@ -109,7 +109,7 @@ app.get('/phones/:phoneId', async (req, res) => {
 		console.log(err)
 
 		res.status(500).send({
-			message: 'Server offline.'
+			message: 'Something went wrong. Try again later.'
 		})
 	}
 })
@@ -140,13 +140,13 @@ app.post('/users', async (req, res) => {
 			},
 		})
 
-		res.send(user)
+		res.status(201).send(user)
 	}
 	catch (err) {
 		console.log(err)
 
 		res.status(500).send({
-			message: 'Server offline.'
+			message: 'Something went wrong. Try again later.'
 		})
 	}
 })
@@ -184,13 +184,13 @@ app.post('/phones', async (req, res) => {
 			},
 		})
 
-		res.send(phone)
+		res.status(201).send(phone)
 	}
 	catch (err) {
 		console.log(err)
 
 		res.status(500).send({
-			message: 'Server offline.'
+			message: 'Something went wrong. Try again later.'
 		})
 	}
 })
