@@ -22,11 +22,61 @@ app.get('/', (req, res) => {
 app.get('/authors', async (req, res) => {
 	try {
 		const authors = await prisma.author.findMany({
+			// include: {
+			// 	books: true,
+			// },
+		})
+
+		res.send(authors)
+	}
+	catch (err) {
+		res.status(500).send({ message: 'Something went wrong' })
+	}
+})
+
+/**
+ * GET /authors/:id
+ */
+
+app.get('/authors/:authorId', async (req, res) => {
+	const { authorId } = req.params
+
+	try {
+		const author = await prisma.author.findUnique({
+			where: {
+				id: Number(authorId),
+			},
 			include: {
 				books: true,
 			},
 		})
-		res.send(authors)
+
+		res.send(author)
+	}
+	catch (err) {
+		res.status(500).send({ message: 'Something went wrong' })
+	}
+})
+
+/**
+ * GET /author/:authorId/books
+ */
+
+app.get('/authors/:authorId/books', async (req, res) => {
+	const { authorId } = req.params
+
+	try {
+		const booksByAuthor = await prisma.book.findMany({
+			where: {
+				authors: {
+					some: {
+						id: Number(authorId),
+					},
+				},
+			},
+		})
+
+		res.send(booksByAuthor)
 	}
 	catch (err) {
 		res.status(500).send({ message: 'Something went wrong' })
@@ -89,17 +139,116 @@ app.post('/authors/:authorId/books', async (req, res) => {
 })
 
 /**
+ * PATCH /authors/:authorId/books
+ */
+
+app.patch('/authors/:authorId/books', async (req, res) => {
+	const { authorId } = req.params
+	const { bookId } = req.body
+
+	try {
+		const result = await prisma.author.update({
+			where: {
+				id: Number(authorId),
+			},
+			data: {
+				books: {
+					// Disconnect the book from the author
+					disconnect: {
+						id: bookId,
+					},
+				},
+			},
+			include: {
+				books: true,
+			},
+		})
+
+		res.send(result)
+	}
+	catch (err) {
+		res.status(500).send({ message: 'Something went wrong' })
+	}
+})
+
+/**
+ * DELETE /authors/:authorId/books/:bookId
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
  * GET /books
  */
 
 app.get('/books', async (req, res) => {
 	try {
 		const books = await prisma.book.findMany({
+			// include: {
+			// 	authors: true,
+			// },
+		})
+		res.send(books)
+	}
+	catch (err) {
+		res.status(500).send({ message: 'Something went wrong' })
+	}
+})
+
+/**
+ * GET /books/:id
+ */
+
+app.get('/books/:bookId', async (req, res) => {
+	const { bookId } = req.params
+
+	try {
+		const book = await prisma.book.findUnique({
+			where: {
+				id: Number(bookId),
+			},
 			include: {
 				authors: true,
 			},
 		})
-		res.send(books)
+
+		res.send(book)
+	}
+	catch (err) {
+		res.status(500).send({ message: 'Something went wrong' })
+	}
+})
+
+/**
+ * GET /books/:bookId/authors
+ */
+
+app.get('/books/:bookId/authors', async (req, res) => {
+	const { bookId } = req.params
+
+	try {
+		const authorsOfBook = await prisma.author.findMany({
+			where: {
+				books: {
+					some: {
+						id: Number(bookId),
+					},
+				},
+			},
+		})
+
+		res.send(authorsOfBook)
 	}
 	catch (err) {
 		res.status(500).send({ message: 'Something went wrong' })
@@ -124,39 +273,6 @@ app.post('/books', async (req, res) => {
 		})
 
 		res.status(201).send(book)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
-
-
-/**
- * POST /authors/:authorId/books
- */
-
-app.post('/books/:bookId/authors', async (req, res) => {
-	const { bookId } = req.params
-	const { authorId } = req.body
-
-	try {
-		const result = await prisma.book.update({
-			where: {
-				id: Number(bookId),
-			},
-			data: {
-				authors: {
-					connect: {
-						id: authorId,
-					},
-				},
-			},
-			include: {
-				authors: true,
-			},
-		})
-
-		res.status(201).send(result)
 	}
 	catch (err) {
 		res.status(500).send({ message: 'Something went wrong' })
