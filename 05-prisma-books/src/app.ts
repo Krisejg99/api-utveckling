@@ -142,6 +142,7 @@ app.post('/authors/:authorId/books', async (req, res) => {
  * PATCH /authors/:authorId/books
  */
 
+// Disconnect the book from the author
 app.patch('/authors/:authorId/books', async (req, res) => {
 	const { authorId } = req.params
 	const { bookId } = req.body
@@ -153,7 +154,6 @@ app.patch('/authors/:authorId/books', async (req, res) => {
 			},
 			data: {
 				books: {
-					// Disconnect the book from the author
 					disconnect: {
 						id: bookId,
 					},
