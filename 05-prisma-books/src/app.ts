@@ -88,11 +88,12 @@ app.get('/authors/:authorId/books', async (req, res) => {
  */
 
 app.post('/authors', async (req, res) => {
-	const { name } = req.body
+	const { name, birthdate } = req.body
 	try {
 		const author = await prisma.author.create({
 			data: {
 				name,
+				birthdate,
 			},
 			include: {
 				books: true,
@@ -170,10 +171,6 @@ app.patch('/authors/:authorId/books', async (req, res) => {
 		res.status(500).send({ message: 'Something went wrong' })
 	}
 })
-
-/**
- * DELETE /authors/:authorId/books/:bookId
- */
 
 
 
@@ -260,12 +257,14 @@ app.get('/books/:bookId/authors', async (req, res) => {
  */
 
 app.post('/books', async (req, res) => {
-	const { title, pages } = req.body
+	const { title, pages, isbn, publisherId } = req.body
 	try {
 		const book = await prisma.book.create({
 			data: {
 				title,
 				pages,
+				isbn,
+				publisherId,
 			},
 			include: {
 				authors: true,
