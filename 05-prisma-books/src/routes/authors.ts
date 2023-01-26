@@ -1,3 +1,4 @@
+
 /**
  * Handles all '/authors' routs
  */
@@ -6,7 +7,6 @@ import express from 'express'
 import prisma from '../prisma'
 
 const router = express.Router()
-
 
 /**
  * GET /
