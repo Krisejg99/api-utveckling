@@ -30,7 +30,7 @@ router.get('/:authorId', async (req, res) => {
 	const { authorId } = req.params
 
 	try {
-		const author = await prisma.author.findUnique({
+		const author = await prisma.author.findUniqueOrThrow({
 			where: {
 				id: Number(authorId),
 			},
@@ -42,7 +42,7 @@ router.get('/:authorId', async (req, res) => {
 		res.send(author)
 	}
 	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(404).send({ message: 'Something went wrong' })
 	}
 })
 
@@ -76,7 +76,9 @@ router.get('/:authorId/books', async (req, res) => {
  */
 
 router.post('/', async (req, res) => {
-	const { name, birthdate } = req.body
+	const { name } = req.body
+	const birthdate = (new Date(req.body.birthdate)).toISOString()
+
 	try {
 		const author = await prisma.author.create({
 			data: {
@@ -88,7 +90,7 @@ router.post('/', async (req, res) => {
 			},
 		})
 
-		res.send(author)
+		res.status(201).send(author)
 	}
 	catch (err) {
 		res.status(500).send({ message: 'Something went wrong' })
@@ -99,6 +101,7 @@ router.post('/', async (req, res) => {
  * POST /:authorId/books
  */
 
+// Connect /:authorId in params to bookId in body
 router.post('/:authorId/books', async (req, res) => {
 	const { authorId } = req.params
 	const { bookId } = req.body
@@ -120,7 +123,7 @@ router.post('/:authorId/books', async (req, res) => {
 			},
 		})
 
-		res.status(201).send(result)
+		res.send(result)
 	}
 	catch (err) {
 		res.status(500).send({ message: 'Something went wrong' })

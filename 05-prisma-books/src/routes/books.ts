@@ -14,11 +14,7 @@ const router = express.Router()
 
 router.get('/', async (req, res) => {
 	try {
-		const books = await prisma.book.findMany({
-			// include: {
-			// 	authors: true,
-			// },
-		})
+		const books = await prisma.book.findMany()
 		res.send(books)
 	}
 	catch (err) {
@@ -34,7 +30,7 @@ router.get('/:bookId', async (req, res) => {
 	const { bookId } = req.params
 
 	try {
-		const book = await prisma.book.findUnique({
+		const book = await prisma.book.findUniqueOrThrow({
 			where: {
 				id: Number(bookId),
 			},
@@ -46,7 +42,7 @@ router.get('/:bookId', async (req, res) => {
 		res.send(book)
 	}
 	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(404).send({ message: 'Something went wrong' })
 	}
 })
 
@@ -89,9 +85,6 @@ router.post('/', async (req, res) => {
 				isbn,
 				publisherId,
 			},
-			// include: {
-			// 	authors: true,
-			// },
 		})
 
 		res.status(201).send(book)

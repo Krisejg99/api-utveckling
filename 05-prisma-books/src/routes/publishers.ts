@@ -5,29 +5,18 @@
 
 import express from 'express'
 import prisma from '../prisma'
+import { index, show, store } from '../controllers/publisher_controller'
 
 const router = express.Router()
 
+// GET /
+router.get('/', index)
 
-/**
- * GET /
- */
+// GET /:publisherId
+router.get('/:publisherId', show)
 
-router.get('/', async (req, res) => {
-	try {
-		const publishers = await prisma.publisher.findMany()
-		res.send(publishers)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
-
-/**
- * GET /:publisherId
- */
-
-router.get('/:publisherId', async (req, res) => {
+//GET /:publisherId/books
+router.get('/:publisherId/books', async (req, res) => {
 	const { publisherId } = req.params
 
 	try {
@@ -40,32 +29,15 @@ router.get('/:publisherId', async (req, res) => {
 			},
 		})
 
-		res.send(publisher)
+		res.send(publisher.books)
 	}
 	catch (err) {
 		res.status(404).send({ message: 'Something went wrong' })
 	}
 })
 
-/**
- * POST /
- */
-
-router.post('/', async (req, res) => {
-	const { name } = req.body
-	try {
-		const publisher = await prisma.publisher.create({
-			data: {
-				name,
-			},
-		})
-
-		res.status(201).send(publisher)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
+// POST
+router.post('/', store)
 
 
 export default router
