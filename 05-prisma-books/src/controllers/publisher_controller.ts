@@ -2,8 +2,11 @@
  * Publisher Controller
  */
 
+import Debug from 'debug'
 import { Request, Response } from 'express'
 import prisma from '../prisma'
+
+const debug = Debug('prisma-books:publisher_controller')
 
 
 

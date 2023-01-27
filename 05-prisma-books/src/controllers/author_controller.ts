@@ -2,8 +2,11 @@
  * Publisher Controller
  */
 
+import Debug from 'debug'
 import { Request, Response } from 'express'
 import prisma from '../prisma'
+
+const debug = Debug('prisma-books:author_controller')
 
 
 
@@ -101,6 +104,7 @@ export const connect = async (req: Request, res: Response) => {
 		res.send(result)
 	}
 	catch (err) {
+		debug("Error thrown when adding book %o to a author %o: %o", bookId, authorId, err)
 		res.status(500).send({ message: 'Something went wrong' })
 	}
 }
