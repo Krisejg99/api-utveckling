@@ -13,15 +13,15 @@ model Book {
     pages       Int       @db.UnsignedInt
     isbn        String?
     authors     Author[]
+    cover       Json      @default("{}")
     publisher   Publisher @relation(fields: [publisherId], references: [id])
     publisherId Int       @db.UnsignedInt
 }
 
 model Author {
-    id        Int       @id @default(autoincrement()) @db.UnsignedInt
-    name      String
-    birthdate DateTime? @db.Date
-    books     Book[]
+    id    Int    @id @default(autoincrement()) @db.UnsignedInt
+    name  String
+    books Book[]
 }
 
 model Publisher {

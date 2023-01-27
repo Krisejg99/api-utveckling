@@ -4,6 +4,7 @@
 
 import Debug from 'debug'
 import { Request, Response } from 'express'
+import { validationResult } from 'express-validator'
 import prisma from '../prisma'
 
 const debug = Debug('prisma-books:author_controller')
@@ -45,14 +46,20 @@ export const show = async (req: Request, res: Response) => {
 
 
 export const store = async (req: Request, res: Response) => {
+	const validationErrors = validationResult(req)
+	if (!validationErrors.isEmpty()) {
+		return res.status(400).send({
+			status: "fail",
+			data: validationErrors.array()
+		})
+	}
+
 	const { name } = req.body
-	const birthdate = (new Date(req.body.birthdate)).toISOString()
 
 	try {
 		const author = await prisma.author.create({
 			data: {
 				name,
-				birthdate,
 			},
 			include: {
 				books: true,
@@ -105,7 +112,7 @@ export const connect = async (req: Request, res: Response) => {
 	}
 	catch (err) {
 		debug("Error thrown when adding book %o to a author %o: %o", bookId, authorId, err)
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(404).send({ message: 'Something went wrong' })
 	}
 }
 

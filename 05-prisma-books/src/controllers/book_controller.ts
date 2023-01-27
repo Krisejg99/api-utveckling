@@ -13,10 +13,16 @@ const debug = Debug('prisma-books:book_controller')
 export const index = async (req: Request, res: Response) => {
 	try {
 		const books = await prisma.book.findMany()
-		res.send(books)
+		res.send({
+			status: 'success',
+			data: books,
+		})
 	}
 	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(500).send({
+			status: 'error',
+			message: 'Something went wrong'
+		})
 	}
 }
 
@@ -31,22 +37,28 @@ export const show = async (req: Request, res: Response) => {
 				id: Number(bookId),
 			},
 			include: {
-				authors: true,
 				publisher: true,
+				authors: true,
 			},
 		})
 
-		res.send(book)
+		res.send({
+			status: 'success',
+			data: book,
+		})
 	}
 	catch (err) {
-		res.status(404).send({ message: 'Something went wrong' })
+		res.status(404).send({
+			status: 'error',
+			message: 'Something went wrong'
+		})
 	}
 }
 
 
 
 export const store = async (req: Request, res: Response) => {
-	const { title, pages, isbn, publisherId } = req.body
+	const { title, pages, isbn, publisherId, cover } = req.body
 	try {
 		const book = await prisma.book.create({
 			data: {
@@ -54,13 +66,20 @@ export const store = async (req: Request, res: Response) => {
 				pages,
 				isbn,
 				publisherId,
+				cover,
 			},
 		})
 
-		res.status(201).send(book)
+		res.status(201).send({
+			status: 'success',
+			data: book,
+		})
 	}
 	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(500).send({
+			status: 'error',
+			message: 'Something went wrong'
+		})
 	}
 }
 
