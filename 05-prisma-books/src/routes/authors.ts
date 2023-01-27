@@ -1,36 +1,21 @@
-
-/**
- * Handles all '/authors' routs
- */
-
 import express from 'express'
 import prisma from '../prisma'
+import { index, show, store, update, destroy, connect, disconnect } from '../controllers/author_controller'
 
 const router = express.Router()
 
-/**
- * GET /
- */
+// GET /
+router.get('/', index)
 
-router.get('/', async (req, res) => {
-	try {
-		const authors = await prisma.author.findMany()
-		res.send(authors)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
+// GET /:authorId
+router.get('/:authorId', show)
 
-/**
- * GET /:authorId
- */
-
-router.get('/:authorId', async (req, res) => {
+// GET /:authorId/books
+router.get('/:authorId/books', async (req, res) => {
 	const { authorId } = req.params
 
 	try {
-		const author = await prisma.author.findUniqueOrThrow({
+		const booksByAuthor = await prisma.author.findUniqueOrThrow({
 			where: {
 				id: Number(authorId),
 			},
@@ -39,128 +24,22 @@ router.get('/:authorId', async (req, res) => {
 			},
 		})
 
-		res.send(author)
+		res.send(booksByAuthor.books)
 	}
 	catch (err) {
 		res.status(404).send({ message: 'Something went wrong' })
 	}
 })
 
-/**
- * GET /:authorId/books
- */
+// POST /
+router.post('/', store)
 
-router.get('/:authorId/books', async (req, res) => {
-	const { authorId } = req.params
+// POST /:authorId/books
+router.post('/:authorId/books', connect)		// Connect /:authorId in params to bookId in body
 
-	try {
-		const booksByAuthor = await prisma.book.findMany({
-			where: {
-				authors: {
-					some: {
-						id: Number(authorId),
-					},
-				},
-			},
-		})
+// PATCH /:authorId/books
+router.patch('/:authorId/books', disconnect)	// Disconnect the book from the author
 
-		res.send(booksByAuthor)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
 
-/**
- * POST /
- */
-
-router.post('/', async (req, res) => {
-	const { name } = req.body
-	const birthdate = (new Date(req.body.birthdate)).toISOString()
-
-	try {
-		const author = await prisma.author.create({
-			data: {
-				name,
-				birthdate,
-			},
-			include: {
-				books: true,
-			},
-		})
-
-		res.status(201).send(author)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
-
-/**
- * POST /:authorId/books
- */
-
-// Connect /:authorId in params to bookId in body
-router.post('/:authorId/books', async (req, res) => {
-	const { authorId } = req.params
-	const { bookId } = req.body
-
-	try {
-		const result = await prisma.author.update({
-			where: {
-				id: Number(authorId),
-			},
-			data: {
-				books: {
-					connect: {
-						id: bookId,
-					},
-				},
-			},
-			include: {
-				books: true,
-			},
-		})
-
-		res.send(result)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
-
-/**
- * PATCH /:authorId/books
- */
-
-// Disconnect the book from the author
-router.patch('/:authorId/books', async (req, res) => {
-	const { authorId } = req.params
-	const { bookId } = req.body
-
-	try {
-		const result = await prisma.author.update({
-			where: {
-				id: Number(authorId),
-			},
-			data: {
-				books: {
-					disconnect: {
-						id: bookId,
-					},
-				},
-			},
-			include: {
-				books: true,
-			},
-		})
-
-		res.send(result)
-	}
-	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
-	}
-})
 
 export default router

@@ -13,7 +13,7 @@ model Book {
     pages       Int       @db.UnsignedInt
     isbn        String?
     authors     Author[]
-    published   Publisher @relation(fields: [publisherId], references: [id])
+    publisher   Publisher @relation(fields: [publisherId], references: [id])
     publisherId Int       @db.UnsignedInt
 }
 
