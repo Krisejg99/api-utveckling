@@ -21,6 +21,6 @@ export const createUserRules = [
 
 export const updateUserRules = [
 	body('name').optional().isString().bail().isLength({ min: 2, max: 191 }),
-	body('email').optional().isEmail(),
+	body('email').optional().isEmail().custom(isValidEmail),
 	body('password').optional().isString().bail().isLength({ min: 6, max: 191 })
 ]
