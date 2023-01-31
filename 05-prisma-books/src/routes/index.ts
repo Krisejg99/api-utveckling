@@ -1,10 +1,10 @@
 import { prisma } from '@prisma/client'
 import express from 'express'
-import { body, CustomValidator } from 'express-validator'
 import authors from './authors'
 import books from './books'
 import publishers from './publishers'
 import { register } from '../controllers/register_controller'
+import { createUserRules, updateUserRules } from '../validations/user_rules'
 
 const router = express.Router()
 
@@ -20,21 +20,7 @@ router.get('/', (req, res) => {
 /**
  * POST /register
  */
-// const isValidEmail: CustomValidator = value => {
-// 	return User.findUserByEmail(value).then(user => {
-// 		if (user) {
-// 			return Promise.reject('E-mail already in use');
-// 		}
-// 	});
-// };
-
-router.post('/register', [
-	body('name').isString().bail().isLength({ min: 2, max: 191 }),
-	body('email').isEmail()
-
-	,
-	body('password').isString().bail().isLength({ min: 6, max: 191 })
-], register)
+router.post('/register', createUserRules, register)
 
 /**
  * GET /profile
