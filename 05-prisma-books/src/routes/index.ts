@@ -4,7 +4,7 @@ import authors from './authors'
 import books from './books'
 import publishers from './publishers'
 import { register } from '../controllers/register_controller'
-import { createUserRules, updateUserRules } from '../validations/user_rules'
+import { createUserRules } from '../validations/user_rules'
 
 const router = express.Router()
 
