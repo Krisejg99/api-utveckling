@@ -15,10 +15,16 @@ const debug = Debug('prisma-books:author_controller')
 export const index = async (req: Request, res: Response) => {
 	try {
 		const authors = await getAuthors()
-		res.send(authors)
+		res.send({
+			status: "success",
+			data: authors,
+		})
 	}
 	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(500).send({
+			status: "error",
+			message: 'Something went wrong',
+		})
 	}
 }
 
@@ -47,13 +53,21 @@ export const store = async (req: Request, res: Response) => {
 		})
 	}
 
-	try {
-		const author = await createAuthor(req.body)
+	const { name } = req.body
 
-		res.status(201).send(author)
+	try {
+		const author = await createAuthor({ name })
+
+		res.status(201).send({
+			status: "success",
+			data: author,
+		})
 	}
 	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(500).send({
+			status: "error",
+			message: 'Something went wrong',
+		})
 	}
 }
 
@@ -92,11 +106,17 @@ export const connect = async (req: Request, res: Response) => {
 			},
 		})
 
-		res.send(result)
+		res.send({
+			status: "success",
+			data: result,
+		})
 	}
 	catch (err) {
 		debug("Error thrown when adding book %o to a author %o: %o", bookId, authorId, err)
-		res.status(404).send({ message: 'Something went wrong' })
+		res.status(500).send({
+			status: "error",
+			message: 'Something went wrong',
+		})
 	}
 }
 
@@ -123,9 +143,15 @@ export const disconnect = async (req: Request, res: Response) => {
 			},
 		})
 
-		res.send(result)
+		res.send(res.send({
+			status: "success",
+			data: result,
+		}))
 	}
 	catch (err) {
-		res.status(500).send({ message: 'Something went wrong' })
+		res.status(500).send({
+			status: "error",
+			message: 'Something went wrong',
+		})
 	}
 }

@@ -32,12 +32,10 @@ export const getAuthor = async (authorId: number) => {
  *
  * @param data Author details
  */
-export const createAuthor = async (authorData: CreateAuthorData) => {
-	const { name } = authorData
-
+export const createAuthor = async (data: CreateAuthorData) => {
 	return await prisma.author.create({
 		data: {
-			name,
-		},
+			name: data.name,
+		}
 	})
 }
