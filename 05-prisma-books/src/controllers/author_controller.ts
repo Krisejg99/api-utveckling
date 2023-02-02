@@ -6,6 +6,7 @@ import Debug from 'debug'
 import { Request, Response } from 'express'
 import { validationResult } from 'express-validator'
 import prisma from '../prisma'
+import { createAuthor, getAuthor, getAuthors } from '../services/author_service'
 
 const debug = Debug('prisma-books:author_controller')
 
@@ -13,7 +14,7 @@ const debug = Debug('prisma-books:author_controller')
 
 export const index = async (req: Request, res: Response) => {
 	try {
-		const authors = await prisma.author.findMany()
+		const authors = await getAuthors()
 		res.send(authors)
 	}
 	catch (err) {
@@ -27,15 +28,7 @@ export const show = async (req: Request, res: Response) => {
 	const { authorId } = req.params
 
 	try {
-		const author = await prisma.author.findUniqueOrThrow({
-			where: {
-				id: Number(authorId),
-			},
-			include: {
-				books: true,
-			},
-		})
-
+		const author = await getAuthor(Number(authorId))
 		res.send(author)
 	}
 	catch (err) {
@@ -54,17 +47,8 @@ export const store = async (req: Request, res: Response) => {
 		})
 	}
 
-	const { name } = req.body
-
 	try {
-		const author = await prisma.author.create({
-			data: {
-				name,
-			},
-			include: {
-				books: true,
-			},
-		})
+		const author = await createAuthor(req.body)
 
 		res.status(201).send(author)
 	}
