@@ -2,6 +2,7 @@
  * User Service
  */
 import prisma from '../prisma'
+import { CreateUserData } from '../types'
 // import { CustomValidator } from 'express-validator'
 
 /**
@@ -18,6 +19,19 @@ export const getUserByEmail = async (email: string) => {
 	})
 }
 
-export const createUser = async () => {
+/**
+ * Create a user
+ *
+ * @param data User details
+ */
+export const createUser = async (userData: CreateUserData,  hashedPassword: string) => {
+	const { name, email } = userData
 
+	return await prisma.user.create({
+		data: {
+			name,
+			email,
+			password: hashedPassword,
+		},
+	})
 }
