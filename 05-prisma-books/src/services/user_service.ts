@@ -24,14 +24,6 @@ export const getUserByEmail = async (email: string) => {
  *
  * @param data User details
  */
-export const createUser = async (userData: CreateUserData,  hashedPassword: string) => {
-	const { name, email } = userData
-
-	return await prisma.user.create({
-		data: {
-			name,
-			email,
-			password: hashedPassword,
-		},
-	})
+export const createUser = async (data: CreateUserData) => {
+	return await prisma.user.create({ data })
 }

@@ -20,9 +20,16 @@ export const register = async (req: Request, res: Response) => {
 
 	const validatedData = matchedData(req)
 	const hashedPassword = await bcrypt.hash(validatedData.password, process.env.SALT_ROUNDS || 10)
+	validatedData.password = hashedPassword
+
+	const { name, email, password } = validatedData
 
 	try {
-		const user = await createUser(req.body, hashedPassword)
+		const user = await createUser({
+			name,
+			email,
+			password,
+		})
 
 		res.status(201).send({
 			status: "success",
