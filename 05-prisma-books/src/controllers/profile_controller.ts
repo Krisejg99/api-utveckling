@@ -13,15 +13,9 @@ const debug = Debug('prisma-books:profile_controller')
  */
 export const getProfile = async (req: Request, res: Response) => {
 
-	const { id, name, email } = req.user
-
 	res.send({
 		status: "success",
-		data: {
-			id,
-			name,
-			email,
-		},
+		data: req.user,
 	})
 }
 

@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken'
 import { Request, Response } from 'express'
 import { matchedData, validationResult } from 'express-validator'
 import { createUser, getUserByEmail } from '../services/user_service'
+import { JwtPayload } from '../types'
 
 const debug = Debug('prisma-books:user_controller')
 
@@ -36,9 +37,10 @@ export const login = async (req: Request, res: Response) => {
 		})
 	}
 
-	const payload = {
+	const payload: JwtPayload = {
 		sub: user.id,
 		name: user.name,
+		email: user.email,
 	}
 
 	if (!process.env.ACCESS_TOKEN_SECRET) {
@@ -50,7 +52,9 @@ export const login = async (req: Request, res: Response) => {
 		})
 	}
 
-	const access_token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET)
+	const access_token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+		expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '4h',
+	})
 
 	res.send({
 		status: "success",
