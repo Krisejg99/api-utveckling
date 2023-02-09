@@ -38,7 +38,7 @@ export const validateToken = (req: Request, res: Response, next: NextFunction) =
 		const payload = (jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || "") as unknown) as JwtPayload
 		debug('payload:', payload)
 
-		req.user = payload
+		req.token = payload
 	}
 	catch (err) {
 		debug('Token failed verification', err)

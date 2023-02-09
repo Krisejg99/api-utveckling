@@ -56,10 +56,24 @@ export const login = async (req: Request, res: Response) => {
 		expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '4h',
 	})
 
+	if (!process.env.REFRESH_TOKEN_SECRET) {
+		debug("No REFRESH_TOKEN_SECRET defined")
+
+		return res.status(500).send({
+			status: "error",
+			data: "No REFRESH_TOKEN_SECRET defined",
+		})
+	}
+
+	const refresh_token = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+		expiresIn: process.env.REFRESH_TOKEN_LIFETIME || '1d',
+	})
+
 	res.send({
 		status: "success",
 		data: {
 			access_token,
+			refresh_token,
 		},
 	})
 }
@@ -100,4 +114,77 @@ export const register = async (req: Request, res: Response) => {
 			message: "Something went wrong",
 		})
 	}
+}
+
+export const refresh = (req: Request, res: Response) => {
+	// Make sure authorization header exists
+	if (!req.headers.authorization) {
+		debug("Authorization header missing")
+
+		return res.status(401).send({
+			status: "fail",
+			message: "Authorization required",
+		})
+	}
+
+	// Split authorization header on ' '
+	const [ authSchema, token ] = req.headers.authorization.split(' ')
+
+	// Make sure athourization schema is "Bearer"
+	if (authSchema.toLowerCase() !== "bearer") {
+		debug("Authorization schema isn't Bearer")
+
+		return res.status(401).send({
+			status: "fail",
+			message: "Authorization required",
+		})
+	}
+
+	// Verify refresh-token and get refresh-token payload
+	try {
+		const refresh_payload = (jwt.verify(token, process.env.REFRESH_TOKEN_SECRET || "") as unknown) as JwtPayload
+		// debug('payload:', payload)
+
+		req.token = refresh_payload
+	}
+	catch (err) {
+		debug('Token failed verification', err)
+
+		return res.status(401).send({
+			status: "fail",
+			data: "Authorization required",
+		})
+	}
+
+	// Construct acces-token payload
+	const { sub, name, email } = req.token
+	const payload = {
+		sub,
+		name,
+		email,
+	}
+	// debug(payload)
+
+	// Issue a new access token
+	if (!process.env.ACCESS_TOKEN_SECRET) {
+		debug("No ACCESS_TOKEN_SECRET defined")
+
+		return res.status(500).send({
+			status: "error",
+			data: "No ACCESS_TOKEN_SECRET defined",
+		})
+	}
+
+	const access_token = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+		expiresIn: process.env.ACCESS_TOKEN_LIFETIME || '4h',
+	})
+	// debug(access_token)
+
+	// Resposnd with new access token
+	res.send({
+		status: "success",
+		data: {
+			access_token,
+		},
+	})
 }
