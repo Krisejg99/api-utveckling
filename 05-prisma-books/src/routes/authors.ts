@@ -1,7 +1,7 @@
 import express from 'express'
 import { body } from 'express-validator'
 import prisma from '../prisma'
-import { index, show, store, update, destroy, connect, disconnect } from '../controllers/author_controller'
+import { index, show, store, update, destroy, connectBook, disconnectBook } from '../controllers/author_controller'
 
 const router = express.Router()
 
@@ -38,10 +38,10 @@ router.post('/', [
 ], store)
 
 // POST /:authorId/books
-router.post('/:authorId/books', connect)		// Connect /:authorId in params to bookId in body
+router.post('/:authorId/books', connectBook)
 
-// PATCH /:authorId/books
-router.patch('/:authorId/books', disconnect)	// Disconnect the book from the author
+// DELETE /:authorId/books
+router.delete('/:authorId/books/:bookId', disconnectBook)
 
 
 

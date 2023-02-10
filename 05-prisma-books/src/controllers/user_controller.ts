@@ -158,7 +158,7 @@ export const refresh = (req: Request, res: Response) => {
 
 	// Construct acces-token payload
 	const { sub, name, email } = req.token
-	const payload = {
+	const payload: JwtPayload = {
 		sub,
 		name,
 		email,

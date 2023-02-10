@@ -85,20 +85,25 @@ export const destroy = async (req: Request, res: Response) => {
 
 
 
-export const connect = async (req: Request, res: Response) => {
-	const { authorId } = req.params
-	const { bookId } = req.body
+export const connectBook = async (req: Request, res: Response) => {
+
+	// Expected input: { "bookIds": [ 8, 9 ] }
+	const bookIds = req.body.bookIds.map((bookId: Number) => {
+		return {
+			id: bookId,
+		}
+	}) // Output:[{ id: 8 }, { id: 9 } ]
+
+	debug(bookIds)
 
 	try {
 		const result = await prisma.author.update({
 			where: {
-				id: Number(authorId),
+				id: Number(req.params.authorId),
 			},
 			data: {
 				books: {
-					connect: {
-						id: bookId,
-					},
+					connect: bookIds,
 				},
 			},
 			include: {
@@ -106,13 +111,13 @@ export const connect = async (req: Request, res: Response) => {
 			},
 		})
 
-		res.send({
+		res.status(201).send({
 			status: "success",
 			data: result,
 		})
 	}
 	catch (err) {
-		debug("Error thrown when adding book %o to a author %o: %o", bookId, authorId, err)
+		debug("Error thrown when adding book %o to a author %o: %o", bookIds, err)
 		res.status(500).send({
 			status: "error",
 			message: 'Something went wrong',
@@ -122,19 +127,16 @@ export const connect = async (req: Request, res: Response) => {
 
 
 
-export const disconnect = async (req: Request, res: Response) => {
-	const { authorId } = req.params
-	const { bookId } = req.body
-
+export const disconnectBook = async (req: Request, res: Response) => {
 	try {
 		const result = await prisma.author.update({
 			where: {
-				id: Number(authorId),
+				id: Number(req.params.authorId),
 			},
 			data: {
 				books: {
 					disconnect: {
-						id: bookId,
+						id: Number(req.params.bookId),
 					},
 				},
 			},

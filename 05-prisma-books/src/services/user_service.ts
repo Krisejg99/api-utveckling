@@ -2,7 +2,7 @@
  * User Service
  */
 import prisma from '../prisma'
-import { CreateUserData } from '../types'
+import { CreateUserData, UpdateUserData } from '../types'
 // import { CustomValidator } from 'express-validator'
 
 /**
@@ -26,4 +26,16 @@ export const getUserByEmail = async (email: string) => {
  */
 export const createUser = async (data: CreateUserData) => {
 	return await prisma.user.create({ data })
+}
+
+/**
+ *
+ * @param id Id of user
+ * @param data Data to update on user
+ */
+export const updateUser = async (id: number, data: UpdateUserData) => {
+	return await prisma.user.update({
+		where: { id },
+		data,
+	})
 }
