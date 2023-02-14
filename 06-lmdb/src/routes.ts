@@ -1,5 +1,5 @@
 import express from 'express'
-import { Movie } from './resources/movie/movie.model'
+import movie_router from './resources/movie/movie.router'
 
 // instantiate a new router
 const router = express.Router()
@@ -7,13 +7,15 @@ const router = express.Router()
 /**
  * GET /
  */
-router.get('/', async (req, res) => {
-	const movies = await Movie.find()
-
+router.get('/', (req, res) => {
 	res.send({
 		message: "I AM MOVIE-DB-API, GIVES POPCORN",
-		data: movies,
 	})
 })
+
+/**
+ * /movies
+ */
+router.use('/movies', movie_router)
 
 export default router
