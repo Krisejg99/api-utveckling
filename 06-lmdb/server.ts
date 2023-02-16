@@ -17,12 +17,14 @@ const server = http.createServer(app)
 /**
  * Listen on provided port, on all network interfaces.
  */
-connect().then(() => {
-	server.listen(PORT)
-}).catch(err => {
-	console.error(err)
-	process.exit(1)
-})
+connect()
+	.then(() => {
+		server.listen(PORT)
+	})
+	.catch(err => {
+		console.error(err)
+		process.exit(1)
+	})
 
 /**
  * Event listener for HTTP server "error" event.

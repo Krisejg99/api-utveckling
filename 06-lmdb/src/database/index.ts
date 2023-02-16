@@ -1,32 +1,41 @@
-import * as Mongoose from 'mongoose'
+import * as mongoose from 'mongoose'
 import Debug from 'debug'
 
 const debug = Debug('lmbd:database')
 
-let database: Mongoose.Connection
+/**
+ * Current MongoDB connection
+ */
+export let db: mongoose.Mongoose
 
+/**
+ * Connect to MongoDB
+ */
 export const connect = async () => {
 	// if we're already connected, do nothng
-	if (database) {
+	if (db) {
+		debug("🏎️ We're already connected, you want MOAR connection?!")
 		return
 	}
 
-	// if no databse is configured, throw a tantrum
+	// if no database is configured, throw a tantrum
 	if (!process.env.DATABASE_URL) {
 		throw Error("No DATABASE_URL set in environment")
 	}
 
+	// prepare for Mongoose 7
+	mongoose.set('strictQuery', false)
+
 	// connect to the database
-	const mongoose = await Mongoose.connect(process.env.DATABASE_URL, {
+	const connection = await mongoose.connect(process.env.DATABASE_URL, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
-	} as Mongoose.ConnectOptions)
+	} as mongoose.ConnectOptions)
 
 	// set global connection instance
-	database = mongoose.connection
-
-	// prepare for Mongoose 7
-	database.set('strictQuery', false)
+	db = connection
 
 	debug("We're connected to MongoDB Atlas!")
+
+	console.log("🥳 We're connected to MongoDB Atlas!")
 }

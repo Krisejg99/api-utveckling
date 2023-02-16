@@ -2,9 +2,7 @@
  * Movie Router
  */
 import express from 'express'
-import { body } from 'express-validator'
 import * as movieController from './movie.controller'
-import { createMovieRules, updateMovieRules } from './movie.validations'
 
 const router = express.Router()
 
@@ -21,16 +19,16 @@ router.get('/:movieId', movieController.show)
 /**
  * POST /movies
  */
-router.post('/', createMovieRules, movieController.store)
+router.post('/', movieController.store)
 
 /**
  * PATCH /movies
  */
-router.patch('/:movieId', updateMovieRules, movieController.update)
+router.patch('/:movieId', movieController.update)
 
-/**
- * DELETE /movies
- */
-router.delete('/:movieId', movieController.destroy)
+// /**
+//  * DELETE /movies
+//  */
+// router.delete('/:movieId', movieController.destroy)
 
 export default router

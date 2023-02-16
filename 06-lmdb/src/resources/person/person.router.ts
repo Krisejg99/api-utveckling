@@ -1,0 +1,25 @@
+/**
+ * Director Router
+ */
+import express from 'express'
+import * as personController from './person.controller'
+import { createDirectorRules, updateDirectorRules } from './person.validations'
+
+const router = express.Router()
+
+/**
+ * GET /people
+ */
+router.get('/', personController.index)
+
+/**
+ * GET /people/:personId
+ */
+router.get('/:personId', personController.show)
+
+/**
+ * POST /people
+ */
+router.post('/', personController.store)
+
+export default router
