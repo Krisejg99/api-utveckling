@@ -2,6 +2,8 @@ import app from './src/app'
 import http from 'http'
 import * as dotenv from 'dotenv'
 import { Server } from 'socket.io'
+import { handleConnection } from './src/controllers/socket_controller'
+import { ClientToServerEvents, ServerToClientEvents, InterServerEvents } from './src/types/shared/SocketTypes'
 
 // Initialize dotenv so it reads our `.env`-file
 dotenv.config()
@@ -13,7 +15,7 @@ const PORT = process.env.PORT || 3000
  * Create HTTP server.
  */
 const httpServer = http.createServer(app)
-const io = new Server(httpServer, {
+const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents>(httpServer, {
 	cors: {
 		origin: '*',
 		credentials: true,
@@ -24,7 +26,7 @@ const io = new Server(httpServer, {
  * Handle incoming Socked.IO connection
  */
 io.on('connection', (socket)=> {
-	console.log('Yey, someone connected to our server!!!', socket.id)
+	handleConnection(socket)
 })
 
 /**
