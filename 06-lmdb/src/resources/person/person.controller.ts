@@ -64,19 +64,6 @@ export const show = async (req: Request, res: Response) => {
  * Create a person
  */
 export const store = async (req: Request, res: Response) => {
-	// const validationErrors = validationResult(req);
-    // if (!validationErrors.isEmpty()) {
-    // 	return res.status(400).json({
-	// 		status: "fail",
-	// 		message: validationErrors.array()
-	// 	});
-    // }
-
-	// const validatedData = matchedData(req)
-	// debug(validatedData)
-
-	// const { name } = validatedData
-
 	try {
 		const person = await new Person(req.body).save()
 
