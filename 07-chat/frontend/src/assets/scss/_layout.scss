@@ -26,14 +26,13 @@
 #chat-wrapper {
 	display: grid;
 	grid-template-columns: 3fr 1fr;
-	overflow: auto;
 
 	#chat {
 		display: flex;
 		flex-direction: column;
 		flex-grow: 1;
 		border-right: 1px solid #555;
-		overflow: auto;
+		overflow-y: auto;
 
 		h2 {
 			background-color: $heading-bg-color;
