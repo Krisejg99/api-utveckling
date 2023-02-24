@@ -142,13 +142,14 @@ socket.on('userJoined', (notice) => {
 messageFormEl.addEventListener('submit', e => {
 	e.preventDefault()
 
-	if (!messageEl.value.trim() || !username) return
+	if (!messageEl.value.trim() || !username || !roomId) return
 
 	// Construct message payload
 	const message: ChatMessageData = {
 		content:messageEl.value,
 		username,
 		timestamp: Date.now(),
+		roomId,
 	}
 
 	// Send (emit) message to server
@@ -175,13 +176,14 @@ usernameFormEl.addEventListener('submit', e => {
 	}
 
 	// Emit `userJoin`-event to the server and wait for acknowledgement before showing the chat view
-	socket.emit('userJoin', username, roomId, (success) => {
-		console.log("Join was success!", success)
+	socket.emit('userJoin', username, roomId, (result) => {
+		console.log("Join was success!", result)
 
-		if (!success) {
-			alert("You are not welcome here!")
-			return
+		if (!result.success || !result.data) {
+			return alert("You are not welcome here!")
 		}
+
+		(document.querySelector('#chat-title') as HTMLHeadingElement).innerText = result.data.name
 
 		// Show chat view
 		showChatView()
