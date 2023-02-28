@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv'
 import { Server } from 'socket.io'
 import { handleConnection } from './src/controllers/socket_controller'
 import { ClientToServerEvents, ServerToClientEvents, InterServerEvents } from './src/types/shared/SocketTypes'
+import { deleteAllUsers } from './src/services/user_service'
 
 // Initialize dotenv so it reads our `.env`-file
 dotenv.config()
@@ -30,9 +31,16 @@ io.on('connection', (socket)=> {
 })
 
 /**
- * Listen on provided port, on all network interfaces.
+ * Delete all users from the database
  */
-httpServer.listen(PORT)
+deleteAllUsers().then(() => {
+	console.log("Deleted all users.... bye bye")
+
+	/**
+	 * Listen on provided port, on all network interfaces.
+	 */
+	httpServer.listen(PORT)
+})
 
 /**
  * Event listener for HTTP server "error" event.

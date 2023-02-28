@@ -1,12 +1,13 @@
 import { Room, User } from '@prisma/client'
 
-export {}
+export { Room, User }
 
 // Events emitted by the server to the client
 export interface ServerToClientEvents {
 	hello: () => void
 	chatMessage: (message: ChatMessageData) => void
 	userJoined: (notice: NoticeData) => void
+	onlineUsers: (users: User[]) => void
 }
 
 // Events emitted by the client to the server

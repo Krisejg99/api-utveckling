@@ -5,6 +5,7 @@ import prisma from '../prisma'
 import Debug from 'debug'
 import { Socket } from 'socket.io'
 import { ClientToServerEvents, NoticeData, RoomInfoData, ServerToClientEvents, UserJoinResult } from '../types/shared/SocketTypes'
+import { getUsersInRoom } from '../services/user_service'
 
 // Create a new debug instance
 const debug = Debug('chat:socket_controller')
@@ -39,6 +40,7 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 
 		// Get room from database
 		const room = await prisma.room.findUnique({ where: { id: roomId } })
+		debug("room:", room)
 		if (!room) {
 			const result: UserJoinResult = {
 				success: false,
@@ -56,8 +58,31 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 		// Add user to room 'roomId'
 		socket.join(roomId)
 
+		// Create a User in the database and set roomId
+		await prisma.user.upsert({
+			where: {
+				id: socket.id,
+			},
+			update: {
+				name: username,
+				roomId,
+			},
+			create: {
+				id: socket.id,
+				name: username,
+				roomId,
+			}
+		})
+
+		// Retrieve a list of Users in the room
+		const usersInRoom = await getUsersInRoom(roomId)
+		debug("Users in this chat room:", usersInRoom)
+
 		// Let everyone know a new user has joined
 		socket.broadcast.to(roomId).emit('userJoined', notice)
+
+		// Broadcast an updated userlist to everyone (else) in the room
+		socket.broadcast.to(roomId).emit('onlineUsers', usersInRoom)
 
 		// Let user know they are welcome
 		const result: UserJoinResult = {
@@ -65,7 +90,7 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 			data: {
 				id: room.id,
 				name: room.name,
-				users: [],
+				users: usersInRoom, // Send the user the list of users in the room
 			},
 		}
 
@@ -73,7 +98,19 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 	})
 
 	// Handle the user disconnecting
-	socket.on('disconnect', () => {
+	socket.on('disconnect', async() => {
 		debug("A user disconnected", socket.id)
+
+		// Find room user was in (if any)
+		const user = await prisma.user.findUnique({ where: { id: socket.id } })
+		if (!user) return
+
+		// Remove the user
+		await prisma.user.delete({ where: { id: socket.id } })
+
+		const users = await getUsersInRoom(user.roomId)
+
+		// Broadcast an updated userlist to everyone (else) in the room
+		socket.broadcast.to(user.roomId).emit('onlineUsers', users)
 	})
 }
