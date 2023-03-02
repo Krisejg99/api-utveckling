@@ -1,6 +1,6 @@
 import './assets/scss/style.scss'
 import { io, Socket } from 'socket.io-client'
-import { ClientToServerEvents, ServerToClientEvents, ChatMessageData } from '@backend/types/shared/SocketTypes'
+import { ClientToServerEvents, ServerToClientEvents, ChatMessageData, User } from '@backend/types/shared/SocketTypes'
 
 const SOCKED_HOST = import.meta.env.VITE_APP_SOCKET_HOST
 
@@ -22,6 +22,17 @@ let username: string | null = null
 
 // Connect to Socket.IO server
 const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(SOCKED_HOST)
+
+//Add messages to the chat
+const addMessagesToChat = (messages: ChatMessageData[]) => {
+	// Clear any previous messages from the chat
+	messageEl.innerHTML = ''
+
+	// Loop over messages and add them to the chat
+	messages.forEach((message) => {
+		addMessageToChat(message)
+	})
+}
 
 // Add a message to the chat
 const addMessageToChat = (message: ChatMessageData, ownMessage = false) => {
@@ -93,6 +104,14 @@ const showWelcomeView = () => {
 	startEl.classList.remove('hide')
 }
 
+// Update userlist with users in the room
+const updateOnlineUsers = (users: User[]) => {
+	const onlineUsersEl = document.querySelector('#online-users') as HTMLUListElement
+	onlineUsersEl.innerHTML = users
+		.map(user => `<li ${user.id === socket.id ? 'class="me"' : ''}><span class="fa-brands fa-jedi-order fa-solid"></span> ${user.name}</li>`)
+		.join('')
+}
+
 // Listen for when connection is established
 socket.on('connect', () => {
 	console.log("CONNECTED TO SERVER!")
@@ -112,7 +131,7 @@ socket.io.on('reconnect', () => {
 
 	// Broadcast userJoin event, but only if we were in the chat previously
 	if (username && roomId) {
-		socket.emit('userJoin', username, roomId, (success) => {
+		socket.emit('userJoin', username, roomId, () => {
 			addNoticeToChat(`${username} reconnected`, Date.now())
 		})
 	}
@@ -138,6 +157,10 @@ socket.on('userJoined', (notice) => {
 	addNoticeToChat(`${notice.username} joined`, notice.timestamp)
 })
 
+socket.on('onlineUsers', (users) => {
+	updateOnlineUsers(users)
+})
+
 // Send a message to the server when form is submitted
 messageFormEl.addEventListener('submit', e => {
 	e.preventDefault()
@@ -146,7 +169,7 @@ messageFormEl.addEventListener('submit', e => {
 
 	// Construct message payload
 	const message: ChatMessageData = {
-		content:messageEl.value,
+		content: messageEl.value,
 		username,
 		timestamp: Date.now(),
 		roomId,
@@ -183,7 +206,15 @@ usernameFormEl.addEventListener('submit', e => {
 			return alert("You are not welcome here!")
 		}
 
-		(document.querySelector('#chat-title') as HTMLHeadingElement).innerText = result.data.name
+		const roomInfo = result.data
+
+		// Update chat view title with room name
+		const chatTitleEl = document.querySelector('#chat-title') as HTMLHeadingElement
+		chatTitleEl.innerText = roomInfo.name
+
+		updateOnlineUsers(roomInfo.users)
+
+		addMessagesToChat(roomInfo.messages)
 
 		// Show chat view
 		showChatView()

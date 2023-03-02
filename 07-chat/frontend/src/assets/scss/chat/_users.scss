@@ -13,8 +13,14 @@
 		list-style: none;
 		overflow-y: scroll;
 
-		li .fa-solid {
-			color: $icon-color;
+		li {
+			&.me {
+				font-weight: bold;
+			}
+			.fa-solid {
+				color: $icon-color;
+				padding-right: 0.125em;
+			}
 		}
 	}
 }

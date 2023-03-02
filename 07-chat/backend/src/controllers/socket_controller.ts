@@ -6,6 +6,8 @@ import Debug from 'debug'
 import { Socket } from 'socket.io'
 import { ClientToServerEvents, NoticeData, RoomInfoData, ServerToClientEvents, UserJoinResult } from '../types/shared/SocketTypes'
 import { getUsersInRoom } from '../services/user_service'
+import { getRoom, getRooms } from '../services/room_service'
+import { createMessage } from '../services/message_service'
 
 // Create a new debug instance
 const debug = Debug('chat:socket_controller')
@@ -21,7 +23,7 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 	// Listen for room list request
 	socket.on('getRoomList', async (callback) => {
 
-		const rooms = await prisma.room.findMany()
+		const rooms = await getRooms()
 		debug("Got a request for rooms, sending list %o", rooms)
 
 		// Send room list
@@ -29,9 +31,12 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 	})
 
 	// Listen for incoming chat messages
-	socket.on('sendChatMessage', (message) => {
+	socket.on('sendChatMessage', async (message) => {
 		debug("New chat message:", socket.id, message)
 		socket.broadcast.to(message.roomId).emit('chatMessage', message)
+
+		debug('Creating message in database:', message)
+		await createMessage(message)
 	})
 
 	// Listen for a user join request
@@ -39,7 +44,7 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 		debug("%s wants to join the chat!!", username)
 
 		// Get room from database
-		const room = await prisma.room.findUnique({ where: { id: roomId } })
+		const room = await getRoom(roomId)
 		debug("room:", room)
 		if (!room) {
 			const result: UserJoinResult = {
@@ -74,6 +79,8 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 			}
 		})
 
+		debug('THIS ROOM:', room)
+
 		// Retrieve a list of Users in the room
 		const usersInRoom = await getUsersInRoom(roomId)
 		debug("Users in this chat room:", usersInRoom)
@@ -90,7 +97,8 @@ export const handleConnection = (socket: Socket<ClientToServerEvents, ServerToCl
 			data: {
 				id: room.id,
 				name: room.name,
-				users: usersInRoom, // Send the user the list of users in the room
+				users: usersInRoom,			// Send the user the list of users in the room
+				messages: room.messages,	// Send the user the latest messages in the room
 			},
 		}
 

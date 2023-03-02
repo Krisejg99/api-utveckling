@@ -1,4 +1,4 @@
-import { Room, User } from '@prisma/client'
+import { Message, Room, User } from '@prisma/client'
 
 export { Room, User }
 
@@ -38,6 +38,7 @@ export interface NoticeData {
 // Room info payload
 export interface RoomInfoData extends Room {
 	users: User[]
+	messages: Message[]
 }
 
 // User Join result

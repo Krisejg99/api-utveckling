@@ -3,10 +3,10 @@
  */
 import prisma from '../prisma'
 
-export const getUsersInRoom = async (roomId: string) => {
-	return await prisma.user.findMany({ where: { roomId } })
+export const getUsersInRoom = (roomId: string) => {
+	return prisma.user.findMany({ where: { roomId } })
 }
 
-export const deleteAllUsers = async () => {
-	return await prisma.user.deleteMany()
+export const deleteAllUsers = () => {
+	return prisma.user.deleteMany()
 }
